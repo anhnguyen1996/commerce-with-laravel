@@ -43,10 +43,10 @@ class CategoryController extends Controller
             $newPriorities[$id] = $priority;
         }
 
-        $totalCategoryRecord = Category::count();
+        $totalCategoryRecord = Category::count();        
         $currentPage = $page;
         $pagination = new Pagination($currentPage, $totalCategoryRecord, 'admin/category');
-        $pagination->setTotalRecordsPerPage(4);
+        $pagination->setTotalRecordsPerPage(5);
         $pagination->save();
 
         $categories = Category::skip($pagination->getStartRecordNumber())

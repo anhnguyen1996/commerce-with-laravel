@@ -60,10 +60,10 @@ class Pagination
 
     private function calculateTheTotalNumberOfPages()
     {        
-        $totalPages = (int)($this->totalRecords/$this->totalRecordsPerPage);
-        if ($this->totalRecords % 2 != 0) {
+        $totalPages = (int)($this->totalRecords / $this->totalRecordsPerPage);
+        if ($this->totalRecords % $this->totalRecordsPerPage != 0) {
             $totalPages++;
-        }
+        }        
         $this->totalPages = $totalPages;          
     }
 
