@@ -5,18 +5,29 @@ function setCookie(cname, cvalue, exdays) {
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 
-function jsonToListHtml(json) {    
-    var categoryArray = json['categories'];    
-    categoryArray = JSON.parse(categoryArray);    
+function jsonToListHtml(json, token = null) {    
+    var categoryArray = json['categories'];
+    var priorityArray = json['priorities'];    
+    categoryArray = JSON.parse(categoryArray);
+    priorityArray = JSON.parse(priorityArray);        
     var categoryArrayLength = categoryArray.length;    
-    var html = '';
-    for (var index = 0; index < categoryArrayLength; index++) {        
-        var category = categoryArray[index];
+    var priorityArrayLength = priorityArray.length;
+    var html = '';    
+    for (var i = 0; i < categoryArrayLength; i++) {        
+        var category = categoryArray[i];
+        
+        var priorityDescribes = null;    
+        for (var j = 0; j < priorityArrayLength; j++) {
+            if (priorityArray[j].id == category.priority_id) {
+                priorityDescribes = priorityArray[j].describes;
+            }
+        }
+
         var categoryHtml = '<tr>';
-        categoryHtml += '<td>' + (index + 1) +'</td>';
+        categoryHtml += '<td>' + (i + 1) +'</td>';
         categoryHtml += '<td>' + category.describes +'</td>';
-        categoryHtml += '<td>' + category.name +'</td>';
-        categoryHtml += '<td>' + category.priority_id +'</td>';
+        categoryHtml += '<td>' + category.name +'</td>';    
+        categoryHtml += '<td>' + priorityDescribes +'</td>';
         categoryHtml += 
             '<td><div class="dropdown">'+
                 '<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">' +
@@ -27,7 +38,8 @@ function jsonToListHtml(json) {
                         '<i class="far fa-edit" aria-hidden="true"></i> Sửa' +
                     '</a>' +
                     '<form id="delete-category-form" action="http://localhost/admin/category/10" method="POST">' +
-                        '<input type="hidden" name="_method" value="DELETE">                  <input type="hidden" name="_token" value="7v6C1aZw1t0rHctqx9X5NxCWPEpGjsczCVN1i0G6">' +
+                        '<input type="hidden" name="_method" value="DELETE">' +
+                        '<input type="hidden" name="_token" value="' + token + '">' +
                         '<a class="dropdown-item" href="#" onclick="document.getElementById(\'delete-category-form\').submit()"><i class="fa fa-times" aria-hidden="true"></i> Xóa</a>' +
                     '</form>' +
                 '</div>' +
@@ -51,9 +63,11 @@ $(document).ready(function () {
             contentType: false,
             processData: false,
             type: 'GET',
-            success: function (result) {                                
+            success: function (result) {
+                var token = $('[name="_token"]').val();
+                console.log(result);                
                 $('#category-table-tbody').empty();
-                $('#category-table-tbody').append(jsonToListHtml(result));                
+                $('#category-table-tbody').append(jsonToListHtml(result, token));                
             },
             error: function (error) {
                 console.log('error');

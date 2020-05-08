@@ -15,36 +15,44 @@ use App\Http\Controllers\ReturnData;
 use App\Http\Controllers\Admin\Pagination\Pagination;
 
 class CategoryController extends Controller
-{    
+{
     /**
      * Display a listing of the resource.
-     *
+     *     
      * @return \Illuminate\Http\Response
      */
-    public function index($page = 1)
-    {           
+    public function index($page = 1, $searchName = null)
+    {
         /**
          * @var \App\Category $categoryModel
-         */                                
-        $totalCategoryRecord = Category::count();       
+         */
 
-        
-        $priorities = Priority::all()->toArray();
+        $orderByWithSortName = 'id';
+        $orderByWithSortValue = 'desc';
+        if (isset($_COOKIE['sort'])) {
+            $orderByWithSortName = $_COOKIE['sort'];
+            $map = ['name' => 'describes', 'link' => 'name', 'id' => 'id'];
+            $orderByWithSortName = $map[$orderByWithSortName];
+            $orderByWithSortValue = 'asc';
+        }
+
+        $priorities = Priority::select('*')->get()->toArray();
         $newPriorities = [];
-        foreach ($priorities as $priority)
-        {
+        foreach ($priorities as $priority) {
             $id = $priority['id'];
             $newPriorities[$id] = $priority;
-        }        
+        }
 
+        $totalCategoryRecord = Category::count();
         $currentPage = $page;
         $pagination = new Pagination($currentPage, $totalCategoryRecord, 'admin/category');
-        $pagination->setTotalRecordsPerPage(10);                      
-        $pagination->save();        
+        $pagination->setTotalRecordsPerPage(4);
+        $pagination->save();
+
         $categories = Category::skip($pagination->getStartRecordNumber())
-            ->take($pagination->getTotalRecordsPerPage())->get()->toArray();
-        
-        return view('admin.master')->with([            
+            ->take($pagination->getTotalRecordsPerPage())->orderBy($orderByWithSortName, $orderByWithSortValue)->get()->toArray();            
+
+        return view('admin.master')->with([
             'content' => 'category.list',
             'categories' => $categories,
             'priorities' => $newPriorities,
@@ -58,12 +66,12 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function create()
-    {        
+    {
         $priorityModel = new Priority();
-        $priorities = $priorityModel->all()->toArray();             
+        $priorities = $priorityModel->all()->toArray();
         return view('admin.master')->with([
             'content' => 'category.create',
-            'priorities' => $priorities          
+            'priorities' => $priorities
         ]);
     }
 
@@ -78,7 +86,7 @@ class CategoryController extends Controller
         $validator = Validator::make($request->all(), [
             'category_name' => 'unique:categories,name'
         ], [
-            'category_name.unique' => 'Tên đường dẫn danh mục: ' . $request->category_name .' đã tồn tại'
+            'category_name.unique' => 'Tên đường dẫn danh mục: ' . $request->category_name . ' đã tồn tại'
         ]);
         if ($validator->fails()) {
             $request->flash();
@@ -106,7 +114,6 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        
     }
 
     /**
@@ -121,8 +128,8 @@ class CategoryController extends Controller
         $priorities = $priorityModel->all()->toArray();
 
         $categoryModel = new Category();
-        $editCategory = $categoryModel->find($id);  
-                          
+        $editCategory = $categoryModel->find($id);
+
         return view('admin.master')->with([
             'content' => 'category.edit',
             'priorities' => $priorities,
@@ -138,20 +145,20 @@ class CategoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(CategoryRequest $request, $id)
-    {                        
+    {
         $updateCategory = Category::find($id);
         if ($updateCategory->name != $request->category_name) {
             $validator = Validator::make($request->all(), [
                 'category_name' => 'unique:categories,name'
             ], [
-                'category_name.unique' => 'Tên đường dẫn danh mục: ' . $request->category_name .' đã tồn tại'
+                'category_name.unique' => 'Tên đường dẫn danh mục: ' . $request->category_name . ' đã tồn tại'
             ]);
-            if ($validator->fails()) {                
+            if ($validator->fails()) {
                 return redirect()->back()->withErrors($validator->errors());
             }
-        }        
+        }
         $updateCategory->name = $request->category_name;
-        $updateCategory->describes = $request->category_describes;        
+        $updateCategory->describes = $request->category_describes;
         $updateCategory->priority_id = $request->category_priority;
         if ($updateCategory->save()) {
             return redirect()->route('category.index');
@@ -172,7 +179,7 @@ class CategoryController extends Controller
          * @var \App\Category $categoryModel
          */
         $categoryModel = new Category();
-        $deleteCategory = $categoryModel->where('id',$id);
+        $deleteCategory = $categoryModel->where('id', $id);
         if ($deleteCategory->delete()) {
             return redirect()->route('category.index');
         } else {
