@@ -3,7 +3,7 @@
 
 <head>
   <title>@yield('title')</title>
-  @include('admin.templates.seo')  
+  @include('admin.templates.seo')
   @include('admin.templates.css')
 </head>
 

@@ -148,30 +148,28 @@
       <!-- Sidebar Menu -->
       <nav class="mt-2">
         @php
-          // $activeMenu = '';
-          // /**
-          //  * @var Core\Data $data
-          // */
-          // $results = $data->getResults();
-          // if (isset($results['activeMenu'])) {
-          //     $activeMenu = $results['activeMenu'];
-          // }                
+        // $activeMenu = '';
+        // /**
+        // * @var Core\Data $data
+        // */
+        // $results = $data->getResults();
+        // if (isset($results['activeMenu'])) {
+        // $activeMenu = $results['activeMenu'];
+        // }
         @endphp
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                     with font-awesome or any other icon font library -->
 
           <li class="nav-item">
-            <a href="{{url('/admin')}}"
-              class="nav-link active">
+            <a href="{{url('/admin')}}" class="nav-link active">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>Bảng điều khiển</p>
             </a>
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/product')}}"
-              class="nav-link">
+            <a href="{{url('admin/product')}}" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
                 Sản phẩm
@@ -180,8 +178,7 @@
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/category')}}"
-              class="nav-link">
+            <a href="{{url('admin/category')}}" class="nav-link">
               <i class="nav-icon fas fa-copy"></i>
               <p>
                 Danh Mục
