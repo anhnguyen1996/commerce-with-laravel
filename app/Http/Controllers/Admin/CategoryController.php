@@ -1,63 +1,86 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Requests\CategoryRequest;
-use Illuminate\Support\Facades\Validator;
+//use Illuminate\Http\Request;
 use Exception;
 use App\Category;
 use App\Priority;
-use App\Http\Controllers\Admin\Header\Breadcrumb;
-use App\Http\Controllers\Admin\Header\HeaderPanel;
-use App\Http\Controllers\ReturnData;
-use App\Http\Controllers\Admin\Pagination\Pagination;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Modules\Pagination\Pagination;
+use App\Http\Controllers\Admin\Modules\Sort\Sort;
+use App\Http\Controllers\Admin\Services\CategoryService;
+use App\Http\Controllers\Admin\Services\PriorityService;
+use App\Http\Requests\CategoryRequest;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *     
+     * @param int $page
+     * current page to display list records
+     * @param string $searchName
+     * search records with name value
      * @return \Illuminate\Http\Response
      */
-    public function index($page = 1, $searchName = null)
+    public function index($page = 1)
     {
-        /**
-         * @var \App\Category $categoryModel
-         */
-
-        $orderByWithSortName = 'id';
-        $orderByWithSortValue = 'desc';
+        $sortName = 'id';
         if (isset($_COOKIE['sort'])) {
-            $orderByWithSortName = $_COOKIE['sort'];
-            $map = ['name' => 'describes', 'link' => 'name', 'id' => 'id'];
-            $orderByWithSortName = $map[$orderByWithSortName];
-            $orderByWithSortValue = 'asc';
+            $sortName = $_COOKIE['sort'];
         }
 
-        $priorities = Priority::select('*')->get()->toArray();
-        $newPriorities = [];
-        foreach ($priorities as $priority) {
-            $id = $priority['id'];
-            $newPriorities[$id] = $priority;
+        $orderValue = 'asc';
+        if (isset($_COOKIE['order'])) {
+            $orderValue = $_COOKIE['order'];
         }
 
-        $totalCategoryRecord = Category::count();        
+        //To display lastest ID for user, so we should order by DESC with field ID 
+        if ($sortName == 'id') {
+            $orderValue = 'desc';
+        }
+
+        $search = null;
+
+        if (isset($_COOKIE['search'])) {
+            $search = $_COOKIE['search'];
+        }
+
+        $totalCategoryRecord = 0;
+        if ($search == null) {
+            $totalCategoryRecord = Category::count();
+        } else {
+            $totalCategoryRecord = Category::where('describes', 'like', "%$search%")->count();
+        }        
         $currentPage = $page;
-        $pagination = new Pagination($currentPage, $totalCategoryRecord, 'admin/category');
-        $pagination->setTotalRecordsPerPage(5);
+        $pagination = Pagination::getPagination($currentPage, $totalCategoryRecord, 'admin/category');
+        $pagination->setTotalRecordsPerPage(10);
         $pagination->save();
 
-        $categories = Category::skip($pagination->getStartRecordNumber())
-            ->take($pagination->getTotalRecordsPerPage())->orderBy($orderByWithSortName, $orderByWithSortValue)->get()->toArray();            
+        $sortModule = new Sort($sortName, $orderValue);
 
-        return view('admin.master')->with([
+        $categoryService = new CategoryService();
+        if ($search != null) {
+            $categoryService->setFindDescribes($search);
+        }
+        $categoryService->setOrder($sortModule->getSortName(), $sortModule->getOrderValue());
+        $categoryService->setLimit($pagination->getStartRecordNumber(), $pagination->getTotalRecordsPerPage());
+        $categories = $categoryService->getCategoriesToArray();
+
+        $prioritiesService = new PriorityService();
+        $priorities = $prioritiesService->getPriorityRecord();
+        
+        $contents = view('admin.master')->with([
+            'search' => $search,
             'content' => 'category.list',
             'categories' => $categories,
-            'priorities' => $newPriorities,
+            'priorities' => $priorities,
             'pagination' => $pagination
         ]);
+
+        $cookie = Cookie::make('page', $page, 3000);
+        return response($contents)->withCookie($cookie);;
     }
 
     /**
@@ -67,18 +90,22 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $priorityModel = new Priority();
-        $priorities = $priorityModel->all()->toArray();
+        $prioritiesService  = new PriorityService();
+        $priorities = $prioritiesService->getPriorityRecord();
+
+        $categoryService = new CategoryService();
+        $parentCategories = $categoryService->getParentCategoryRecords();                               
         return view('admin.master')->with([
             'content' => 'category.create',
-            'priorities' => $priorities
+            'priorities' => $priorities,
+            'parentCategories' => $parentCategories
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request\CategoryRequest  $request
+     * @param  \App\Http\Requests\CategoryRequest  $request
      * @return \Illuminate\Http\Response
      */
     public function store(CategoryRequest $request)
@@ -92,13 +119,16 @@ class CategoryController extends Controller
             $request->flash();
             return redirect()->back()->withErrors($validator->errors());
         }
-        /**
-         * @var \App\Category $categoryModel
-         */
-        $categoryModel = new Category();
+
+        $categoryService = new CategoryService();
+
+        $categoryModel = new Category();        
         $categoryModel->name = $request->category_name;
         $categoryModel->describes = $request->category_describes;
         $categoryModel->priority_id = $request->category_priority;
+        $categoryModel->parent_id = $request->parent_category;
+        $categoryModel->parent_level = $categoryService->getParentLevel($request->parent_category);
+        $categoryModel->visible = $request->category_visible;       
         if ($categoryModel->save()) {
             return redirect()->route('category.index');
         } else {
@@ -124,23 +154,25 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        $priorityModel = new Priority();
-        $priorities = $priorityModel->all()->toArray();
+        $priorities = Priority::all()->toArray();
+        
+        $editCategory = Category::find($id)->toArray();
 
-        $categoryModel = new Category();
-        $editCategory = $categoryModel->find($id);
+        $categoryService =  new CategoryService();
+        $parentCategories = $categoryService->getParentCategoryRecords();        
 
         return view('admin.master')->with([
             'content' => 'category.edit',
             'priorities' => $priorities,
-            'editCategory' => $editCategory
+            'editCategory' => $editCategory,
+            'parentCategories' => $parentCategories
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\CategoryRequest  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -159,7 +191,9 @@ class CategoryController extends Controller
         }
         $updateCategory->name = $request->category_name;
         $updateCategory->describes = $request->category_describes;
-        $updateCategory->priority_id = $request->category_priority;
+        $updateCategory->priority_id = $request->category_priority;        
+        $updateCategory->visible = $request->category_visible;  
+        $updateCategory->parent_id = $request->parent_category;
         if ($updateCategory->save()) {
             return redirect()->route('category.index');
         } else {
@@ -175,30 +209,12 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        /**
-         * @var \App\Category $categoryModel
-         */
-        $categoryModel = new Category();
-        $deleteCategory = $categoryModel->where('id', $id);
+        $deleteCategory = Category::where('id', $id);
         if ($deleteCategory->delete()) {
             return redirect()->route('category.index');
         } else {
             throw new Exception('delete category error');
             return redirect()->route('category.index')->with(['error' => 'delete category error']);
         }
-    }
-
-    public function getSortList()
-    {
-        $sortValue = 'name';
-        if (isset($_GET['sort'])) {
-            $sortValue = $_GET['sort'];
-        }
-        $categories = Category::orderBy($sortValue, 'asc')->get()->toJson();
-        $priorities = Priority::all()->toJson();
-        return response()->json([
-            'priorities' => $priorities,
-            'categories' => $categories
-        ]);
     }
 }

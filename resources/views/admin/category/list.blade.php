@@ -20,7 +20,8 @@
 <nav class="navbar navbar-expand-sm bg-light navbar-dark">
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">      
-      <li class="nav-item">                     
+      <li class="nav-item">
+        <a href="{{route('category.create')}}"><button class="form-control btn btn-outline-primary">Thêm mới</button></a>
       </li>    
     </ul>
     <form class="form-inline  mr-sm-2" action="#">
@@ -30,33 +31,41 @@
         </div>
         <select class="form-control" id="sort-list" name="sort">
           @php
-          $sort = null;
+          $sort = 'id';
           @endphp
           @isset($_COOKIE['sort'])
           @php
-          $sort = $_COOKIE['sort'];
+          $sort = $_COOKIE['sort'];          
           @endphp
           @endisset
           <option value="id">Gần đây</option>
-          <option value="name" @if ($sort=='name' ) selected @endif>Tên</option>
-          <option value="link" @if ($sort=='link' ) selected @endif>Link</option>
+          <option value="describes" @if ($sort == 'describes') selected @endif>Tên</option>
+          <option value="name" @if ($sort == 'name') selected @endif>Link</option>
         </select>
       </div>
     </form>
-    <form class="form-inline mr-sm-2" action="#">
+    <form class="form-inline mr-sm-2" id="order-form" action="#">
       <div class="input-group">
         <div class="input-group-prepend">
           <span class="input-group-text"><label for="order-list">Thứ tự</label></span>
         </div>
         <select class="form-control" id="order-list" name="order">
-          <option value="asc">Tăng dần</option>
-          <option value="desc">Giảm dần</option>
+          @php
+          $order = null;          
+          @endphp
+          @isset($_COOKIE['order'])
+          @php
+          $order = $_COOKIE['order'];
+          @endphp
+          @endisset
+          <option value="asc" @if ($order == 'asc') selected @endif>Tăng dần</option>
+          <option value="desc" @if ($order == 'desc') selected @endif>Giảm dần</option>
         </select>
       </div>
     </form>
-    <form class="form-inline my-2 my-lg-0">      
-      <input class="form-control mr-sm-2" type="text" placeholder="Tên">
-      <button class="btn btn-success my-2 my-sm-0" type="button">Tìm kiếm</button>
+    <form action="#" class="form-inline my-2 my-lg-0">      
+      <input id="search-text" class="form-control mr-sm-2" type="text" placeholder="Tên cần tìm" value="{{$search}}">
+      <button id="search-button" type="button" class="btn btn-success my-2 my-sm-0" type="button">Tìm kiếm</button>
     </form>    
   </div>
   
@@ -65,41 +74,56 @@
 @include('admin.templates.content_header')
 
 <!-- Main content -->
-<div class="table-responsive">
+@isset($_COOKIE['search'])
+<p> Kết quả tìm kiếm từ khóa "{{$_COOKIE['search']}}" <a class="text-danger" id="delete-search">Xóa tìm kiếm</a></p>
+@endisset
+<div class="table-responsive" style="min-height: 600px">
   <table class="table table-striped table-bordered table-hover ">
     <thead>
       <tr>
         <th>STT</th>
-        <th>Tên</th>
+        <th>Tên danh mục</th>
         <th>Liên kết</th>
         <th>Ưu tiên</th>
+        <th>Thuộc danh mục</th>
+        <th>Hiển thị</th>
         <th></th>
       </tr>
     </thead>
     <tbody id="category-table-tbody">
       @php
-      $count = 0;
+      $index = 0;
+      if (isset($pagination)) {
+        $index = $pagination->getStartRecordNumber();
+      }
+      //dd($categories);
       @endphp
       @foreach ($categories as $category)
+      @php
+      $category = (array)$category;
+      $id = $category['id'];       
+      @endphp
       <tr>
-        <td>{{++$count}}</td>
+        <td>{{++$index}}</td>
         <td>{{$category['describes']}}</td>
         <td>{{$category['name']}}</td>
         <td>{{$priorities[$category['priority_id']]['describes']}}</td>
+        <td>{{$category['parent_describes']}}</td>
+        <td>@if($category['visible'] == true) Hiện @else Ẩn @endif</td>
         <td>
           <div class="dropdown">
             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
               Thay đổi
             </button>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu">              
               <a class="dropdown-item" href="{{route('category.edit', ['category' => $category['id']])}}">
                 <i class="far fa-edit" aria-hidden="true"></i> Sửa
               </a>
-              <form id="delete-category-form" action="{{route('category.destroy',['category' => $category['id']])}}"
+              <form id="delete-id-{{$category['id']}}" action="{{route('category.destroy',['category' => $category['id']])}}"
                 method="POST">
                 @method('DELETE')
                 @csrf
-                <a class="dropdown-item" href="#" onclick="document.getElementById('delete-category-form').submit()"><i
+                <a class="dropdown-item" onclick="document.getElementById('delete-id-{{$category['id']}}').submit();"><i
                     class="fa fa-times" aria-hidden="true"></i> Xóa</a>
               </form>
             </div>
@@ -108,9 +132,8 @@
       </tr>
       @endforeach
     </tbody>
-  </table>
-
-  @section('pagination')
-  @include('admin.templates.pagination')
-  @endsection
+  </table>  
 </div>
+@section('pagination')
+@include('admin.templates.pagination')
+@endsection

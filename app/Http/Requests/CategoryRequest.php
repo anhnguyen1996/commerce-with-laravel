@@ -25,15 +25,17 @@ class CategoryRequest extends FormRequest
     {
         return [
             'category_name' => 'required',
-            'category_priority' => 'required|integer|min:1|max:255'
+            'category_priority' => 'required|integer|min:1|max:255',
+            'category_visible' => 'required|boolean'
         ];
     }
 
     public function messages()
     {
         return [
-            'category_name.required' => 'Tên danh mục không được rỗng',            
-            'category_priority.required' => 'Độ ưu tiên không được rỗng'       
+            'category_name.required' => 'Tên danh mục không được rỗng!',
+            'category_priority.required' => 'Độ ưu tiên không được rỗng!',
+            'category_visible.boolean' => 'Hiển thị danh mục không hợp lệ!'
         ];
     }
 }

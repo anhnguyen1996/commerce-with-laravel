@@ -2,7 +2,7 @@
 <html lang="vi">
 
 <head>
-  <title>@yield('title')</title>
+  <title>@yield('title', 'Quản lý bán hàng')</title>
   @include('admin.templates.seo')
   @include('admin.templates.css')
 </head>

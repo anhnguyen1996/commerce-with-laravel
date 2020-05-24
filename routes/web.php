@@ -20,9 +20,9 @@ Route::group([
         });
     
         Route::get('category/page/{page}','CategoryController@index')->where(['page' => '^[0-9]+$']);
-        Route::get('category/page/{page}/search/{search}','CategoryController@index')->where(['page' => '^[0-9]+$']);
-        Route::get('category/sort', 'CategoryController@getSortList');
-
+        Route::get('category/search/',['as' => 'category.search', 'uses' => 'Services\CategoryService@search']);
+        Route::get('category/search/{search}',['as' => 'category.search', 'uses' => 'Services\CategoryService@search']);
+        Route::get('category/sort/{sort}/{order}', 'Services\CategoryService@getSortList');        
         Route::resource('category', 'CategoryController');                
     }
 );

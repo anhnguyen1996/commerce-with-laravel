@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Admin\Pagination;
+namespace App\Http\Controllers\Admin\Modules\Pagination;
 
 /*
 This class is used by method index in All Controller
@@ -8,6 +8,8 @@ or anything same operation
 
 class Pagination
 {
+    private static $pagination;
+
     private $currentPage = 1;
     
     private $totalPages;
@@ -36,7 +38,7 @@ class Pagination
      * 
      * @param int $totalRecordsPerPage
      */
-    public function __construct($currentPage, $totalRecords, $url, $totalRecordsPerPage = 10)
+    private function __construct($currentPage, $totalRecords, $url, $totalRecordsPerPage = 10)
     {
         $this->currentPage = $currentPage;
         $this->totalRecords = $totalRecords;        
@@ -45,6 +47,14 @@ class Pagination
         $this->calculateTheTotalNumberOfPages();
         $this->calculateStartRecordNumber();
         $this->calculateEndRecordNumber();
+    }
+
+    public static function getPagination($currentPage, $totalRecords, $url, $totalRecordsPerPage = 10)
+    {
+        if (self::$pagination == null) {
+            self::$pagination = new Pagination($currentPage, $totalRecords, $url, $totalRecordsPerPage);
+        }
+        return self::$pagination;
     }
     
     /**
@@ -68,7 +78,7 @@ class Pagination
     }
 
     private  function calculateStartRecordNumber()
-    {
+    {        
         $this->startRecordNumber =  ($this->currentPage - 1) * $this->totalRecordsPerPage;
     }
 
