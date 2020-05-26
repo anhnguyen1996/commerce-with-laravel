@@ -1,10 +1,10 @@
-<!-- Script -->
-<script src="{{asset('public/admin/js/form-setting/validation-rule.js')}}"></script>
-<script src="{{asset('public/admin/js/form-setting/form.js')}}"></script>
-<script src="{{asset('public/admin/js/category-form.js')}}"></script>
-<!-- End script -->
+@php
+$activeMenu = 'category';
+@endphp
 
 @section('title', 'Tạo mới danh mục')
+
+{{-- Content header --}}
 @section('breadcrumb')
 <ol class="breadcrumb float-sm-right">
   <li class="breadcrumb-item"><a href="/admin">Bảng điều khiển</a></li>
@@ -12,15 +12,22 @@
   <li class="breadcrumb-item active">Tạo mới danh mục</li>
 </ol>
 @endsection
+
 @section('back-link')
 <a href="{{url('/admin/category')}}" class="btn btn-primary btn-sm">
   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
   Trở về
 </a>
 @endsection
-@include('admin.templates.content_header')
+{{-- End content header --}}
 
-<!-- Main content -->
+{{-- Main content --}}
+@section('content')
+<!-- Script -->
+<script src="{{asset('public/admin/js/form-setting/validation-rule.js')}}"></script>
+<script src="{{asset('public/admin/js/form-setting/form.js')}}"></script>
+<script src="{{asset('public/admin/js/category-form.js')}}"></script>
+<!-- End script -->
 <section class="content">
   <form action="{{route('category.store')}}" id="create-category-form" method="POST">
     @csrf
@@ -103,4 +110,7 @@
     </div>
   </form>
 </section>
-<!-- /.content -->
+@endsection
+{{-- End main content --}}
+
+@extends('admin.master')

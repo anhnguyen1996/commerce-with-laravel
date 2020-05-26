@@ -146,30 +146,32 @@
       </div>
 
       <!-- Sidebar Menu -->
-      <nav class="mt-2">
-        @php
-        // $activeMenu = '';
-        // /**
-        // * @var Core\Data $data
-        // */
-        // $results = $data->getResults();
-        // if (isset($results['activeMenu'])) {
-        // $activeMenu = $results['activeMenu'];
-        // }
-        @endphp
+      <nav class="mt-2">        
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                     with font-awesome or any other icon font library -->
 
           <li class="nav-item">
-            <a href="{{url('/admin')}}" class="nav-link active">
+            <a href="{{url('/admin')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'dashboard')
+                  active
+                @endif
+              @endisset              
+              ">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>Bảng điều khiển</p>
             </a>
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/product')}}" class="nav-link">
+            <a href="{{url('admin/product')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'product')
+                  active
+                @endif
+              @endisset 
+              ">
               <i class="nav-icon fas fa-th"></i>
               <p>
                 Sản phẩm
@@ -178,7 +180,13 @@
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/category')}}" class="nav-link">
+            <a href="{{url('admin/category')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'category')
+                  active
+                @endif
+              @endisset
+              ">
               <i class="nav-icon fas fa-copy"></i>
               <p>
                 Danh Mục
@@ -187,7 +195,13 @@
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/config')}}" class="nav-link">
+            <a href="{{url('admin/config')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'config')
+                  active
+                @endif
+              @endisset
+              ">
               <i class="nav-icon fas fa-chart-pie"></i>
               <p>
                 Cấu Hình
@@ -196,7 +210,13 @@
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/menu')}}" class="nav-link">
+            <a href="{{url('admin/menu')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'menu')
+                  active
+                @endif
+              @endisset
+              ">
               <i class="nav-icon fas fa-tree"></i>
               <p>
                 Menu
@@ -205,7 +225,13 @@
           </li>
 
           <li class="nav-item">
-            <a href="{{url('admin/user')}}" class="nav-link">
+            <a href="{{url('admin/user')}}" class="nav-link
+              @isset($activeMenu)
+                @if($activeMenu == 'user')
+                  active
+                @endif
+              @endisset
+              ">
               <i class="nav-icon fas fa-edit"></i>
               <p>
                 Thành viên

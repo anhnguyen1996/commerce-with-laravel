@@ -1,7 +1,6 @@
 <?php
 namespace App\Http\Controllers\Admin;
 
-//use Illuminate\Http\Request;
 use Exception;
 use App\Category;
 use App\Priority;
@@ -52,7 +51,7 @@ class CategoryController extends Controller
             $totalCategoryRecord = Category::count();
         } else {
             $totalCategoryRecord = Category::where('describes', 'like', "%$search%")->count();
-        }        
+        }
         $currentPage = $page;
         $pagination = Pagination::getPagination($currentPage, $totalCategoryRecord, 'admin/category');
         $pagination->setTotalRecordsPerPage(10);
@@ -71,15 +70,15 @@ class CategoryController extends Controller
         $prioritiesService = new PriorityService();
         $priorities = $prioritiesService->getPriorityRecord();
         
-        $contents = view('admin.master')->with([
-            'search' => $search,
-            'content' => 'category.list',
+        $contents = view('admin.category.list')->with([
+            'search' => $search,            
             'categories' => $categories,
             'priorities' => $priorities,
             'pagination' => $pagination
         ]);
 
         $cookie = Cookie::make('page', $page, 3000);
+
         return response($contents)->withCookie($cookie);;
     }
 
@@ -95,11 +94,12 @@ class CategoryController extends Controller
 
         $categoryService = new CategoryService();
         $parentCategories = $categoryService->getParentCategoryRecords();                               
-        return view('admin.master')->with([
-            'content' => 'category.create',
+        $content = view('admin.category.create')->with([            
             'priorities' => $priorities,
             'parentCategories' => $parentCategories
         ]);
+
+        return response($content);
     }
 
     /**
@@ -119,14 +119,13 @@ class CategoryController extends Controller
             $request->flash();
             return redirect()->back()->withErrors($validator->errors());
         }
-
-        $categoryService = new CategoryService();
-
+ 
         $categoryModel = new Category();        
         $categoryModel->name = $request->category_name;
         $categoryModel->describes = $request->category_describes;
         $categoryModel->priority_id = $request->category_priority;
         $categoryModel->parent_id = $request->parent_category;
+        $categoryService = new CategoryService();
         $categoryModel->parent_level = $categoryService->getParentLevel($request->parent_category);
         $categoryModel->visible = $request->category_visible;       
         if ($categoryModel->save()) {
@@ -161,12 +160,13 @@ class CategoryController extends Controller
         $categoryService =  new CategoryService();
         $parentCategories = $categoryService->getParentCategoryRecords();        
 
-        return view('admin.master')->with([
-            'content' => 'category.edit',
+        $content = view('admin.category.edit')->with([            
             'priorities' => $priorities,
             'editCategory' => $editCategory,
             'parentCategories' => $parentCategories
         ]);
+
+        return response($content);
     }
 
     /**

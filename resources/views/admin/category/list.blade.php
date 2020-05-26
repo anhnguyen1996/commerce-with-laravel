@@ -1,28 +1,34 @@
-<!-- Script -->
-<script src="{{asset('public/admin/js/category-list.js')}}"></script>
-<!-- End script -->
+@php
+$activeMenu = 'category';
+@endphp
 
 @section('title', 'Danh sách danh mục')
+{{-- Content Header --}}
 @section('breadcrumb')
 <ol class="breadcrumb float-sm-right">
   <li class="breadcrumb-item"><a href="/admin">Bảng điều khiển</a></li>
   <li class="breadcrumb-item active">Danh mục</li>
 </ol>
 @endsection
+
 @section('back-link')
 <a href="{{url('/admin')}}" class="btn btn-primary btn-sm">
   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
   Trở về
 </a>
 @endsection
-@section('feature')
 
+@section('feature')
 <nav class="navbar navbar-expand-sm bg-light navbar-dark">
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">      
+    <ul class="navbar-nav mr-auto">
       <li class="nav-item">
-        <a href="{{route('category.create')}}"><button class="form-control btn btn-outline-primary">Thêm mới</button></a>
-      </li>    
+        <a href="{{route('category.create')}}">
+          <button class="form-control btn btn-outline-primary">
+            Tạo mới
+          </button>
+        </a>
+      </li>
     </ul>
     <form class="form-inline  mr-sm-2" action="#">
       <div class="input-group">
@@ -35,12 +41,12 @@
           @endphp
           @isset($_COOKIE['sort'])
           @php
-          $sort = $_COOKIE['sort'];          
+          $sort = $_COOKIE['sort'];
           @endphp
           @endisset
           <option value="id">Gần đây</option>
-          <option value="describes" @if ($sort == 'describes') selected @endif>Tên</option>
-          <option value="name" @if ($sort == 'name') selected @endif>Link</option>
+          <option value="describes" @if ($sort=='describes' ) selected @endif>Tên</option>
+          <option value="name" @if ($sort=='name' ) selected @endif>Link</option>
         </select>
       </div>
     </form>
@@ -51,29 +57,33 @@
         </div>
         <select class="form-control" id="order-list" name="order">
           @php
-          $order = null;          
+          $order = null;
           @endphp
           @isset($_COOKIE['order'])
           @php
           $order = $_COOKIE['order'];
           @endphp
           @endisset
-          <option value="asc" @if ($order == 'asc') selected @endif>Tăng dần</option>
-          <option value="desc" @if ($order == 'desc') selected @endif>Giảm dần</option>
+          <option value="asc" @if ($order=='asc' ) selected @endif>Tăng dần</option>
+          <option value="desc" @if ($order=='desc' ) selected @endif>Giảm dần</option>
         </select>
       </div>
     </form>
-    <form action="#" class="form-inline my-2 my-lg-0">      
+    <form action="#" class="form-inline my-2 my-lg-0">
       <input id="search-text" class="form-control mr-sm-2" type="text" placeholder="Tên cần tìm" value="{{$search}}">
       <button id="search-button" type="button" class="btn btn-success my-2 my-sm-0" type="button">Tìm kiếm</button>
-    </form>    
+    </form>
   </div>
-  
 </nav>
 @endsection
-@include('admin.templates.content_header')
+{{-- End content header --}}
 
-<!-- Main content -->
+{{-- Main content --}}
+@section('content')
+<!-- Script -->
+<script src="{{asset('public/admin/js/category-list.js')}}"></script>
+<!-- End script -->
+
 @isset($_COOKIE['search'])
 <p> Kết quả tìm kiếm từ khóa "{{$_COOKIE['search']}}" <a class="text-danger" id="delete-search">Xóa tìm kiếm</a></p>
 @endisset
@@ -94,14 +104,14 @@
       @php
       $index = 0;
       if (isset($pagination)) {
-        $index = $pagination->getStartRecordNumber();
+      $index = $pagination->getStartRecordNumber();
       }
       //dd($categories);
       @endphp
       @foreach ($categories as $category)
       @php
       $category = (array)$category;
-      $id = $category['id'];       
+      $id = $category['id'];
       @endphp
       <tr>
         <td>{{++$index}}</td>
@@ -115,12 +125,12 @@
             <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
               Thay đổi
             </button>
-            <div class="dropdown-menu">              
+            <div class="dropdown-menu">
               <a class="dropdown-item" href="{{route('category.edit', ['category' => $category['id']])}}">
                 <i class="far fa-edit" aria-hidden="true"></i> Sửa
               </a>
-              <form id="delete-id-{{$category['id']}}" action="{{route('category.destroy',['category' => $category['id']])}}"
-                method="POST">
+              <form id="delete-id-{{$category['id']}}"
+                action="{{route('category.destroy',['category' => $category['id']])}}" method="POST">
                 @method('DELETE')
                 @csrf
                 <a class="dropdown-item" onclick="document.getElementById('delete-id-{{$category['id']}}').submit();"><i
@@ -132,8 +142,13 @@
       </tr>
       @endforeach
     </tbody>
-  </table>  
+  </table>
 </div>
+@endsection
+
 @section('pagination')
 @include('admin.templates.pagination')
 @endsection
+{{-- End main content --}}
+
+@extends('admin.master')

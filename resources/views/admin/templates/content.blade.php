@@ -1,7 +1,11 @@
 <div class="content-wrapper" style="min-height: 1200.88px;">
-  @isset($content)
+  {{-- @isset($content)
   @include('admin.' . $content)
   @endisset
-  @section('pagination')
+   --}}
+  @include('admin.templates.content_header')
+  @section('content')
+  @show
+  @section('pagination') 
   @show
 </div>

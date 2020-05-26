@@ -29,7 +29,7 @@
         </ol>
       </div>
     </div>
-  </div><!-- /.container-fluid -->
+  </div>
   @section('feature')
   @show
 </section>

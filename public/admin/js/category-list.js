@@ -31,7 +31,7 @@ function jsonToListHtml(json, token = null) {
     var categoryArrayLength = categoryArray.length;
     var priorityArrayLength = priorityArray.length;
     var html = '';    
-    for (i = 0; i < categoryArrayLength; i++) {
+    for (var i = 0; i < categoryArrayLength; i++) {
         var category = categoryArray[i];
 
         var priorityDescribes = null;

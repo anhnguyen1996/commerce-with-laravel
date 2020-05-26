@@ -1,10 +1,10 @@
-<!-- Script -->
-<script src="{{asset('public/admin/js/form-setting/validation-rule.js')}}"></script>
-<script src="{{asset('public/admin/js/form-setting/form.js')}}"></script>
-<script src="{{asset('public/admin/js/category-form.js')}}"></script>
-<!-- End script -->
+@php
+$activeMenu = 'category';
+@endphp
 
 @section('title', 'Sửa đổi danh mục')
+
+{{-- Content header --}}
 @section('breadcrumb')
 <ol class="breadcrumb float-sm-right">
   <li class="breadcrumb-item"><a href="/admin">Bảng điều khiển</a></li>
@@ -18,9 +18,16 @@
   Trở về
 </a>
 @endsection
-@include('admin.templates.content_header')
+{{-- End content header --}}
 
-<!-- Main content -->
+{{-- Main content --}}
+@section('content')
+<!-- Script -->
+<script src="{{asset('public/admin/js/form-setting/validation-rule.js')}}"></script>
+<script src="{{asset('public/admin/js/form-setting/form.js')}}"></script>
+<script src="{{asset('public/admin/js/category-form.js')}}"></script>
+<!-- End script -->
+
 <section class="content">
   @php
   $editCategory = (array)$editCategory;
@@ -115,4 +122,6 @@
     </div>
   </form>
 </section>
-<!-- /.content -->
+@endsection
+{{-- End main content --}}
+@extends('admin.master')
