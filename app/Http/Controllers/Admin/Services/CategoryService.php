@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Http\Controllers\Admin\Services;
 
 use App\Category;
+use App\Http\Controllers\Admin\Modules\Cookie\JsonCookie;
 use App\Http\Controllers\Admin\Modules\Pagination\Pagination;
 use App\Priority;
 use Illuminate\Support\Facades\Cookie;
@@ -15,24 +15,24 @@ class CategoryService extends ServiceAbstract
         $categories = null;
         $haveSort = false;
         $haveLimit = false;
+        $haveFindId = false;
         $categoryModel = new Category();
+        $categories = $categoryModel;
+        if (isset($this->findId)) {
+            $haveFindId = true;
+            $categories = $categories->where('id', $this->findId);
+        }
         if (isset($this->orderByWithSortName, $this->orderByWithOrder)) {
             $haveSort = true;
-            $categories = $categoryModel->orderBy($this->orderByWithSortName, $this->orderByWithOrder);
+            $categories = $categories->orderBy($this->orderByWithSortName, $this->orderByWithOrder);
         }
         if (isset($this->skipRecordNumber) && isset($this->takeRecordsNumber)) {
-            $haveLimit = true;
-            if ($haveSort == true) {
-                $categories = $categories->skip($this->skipRecordNumber)
-                    ->take($this->takeRecordsNumber);
-            } else {
-                $categories = $categoryModel->skip($this->skipRecordNumber)
-                    ->take($this->takeRecordsNumber);
-            }
+            $haveLimit = true;            
+            $categories = $categories->skip($this->skipRecordNumber)
+                ->take($this->takeRecordsNumber);            
         }
-
-        if ($haveLimit == false && $haveSort == false) {
-            $categories = $categoryModel->select('*');
+        if ($haveLimit == false && $haveSort == false && $haveFindId == false) {
+            $categories = $categories->select('*');
         }
         return $categories->get();
     }
@@ -101,12 +101,14 @@ class CategoryService extends ServiceAbstract
         }
 
         $currentPage = 1;
-        if (isset($_COOKIE['page'])) {
-            $currentPage = $_COOKIE['page'];
+        $pageCookieValue = JsonCookie::getValueInJsonCookie('page', 'category');
+        if ($pageCookieValue != null) {
+            $currentPage = $pageCookieValue;
         }
 
-        if (isset($_COOKIE['search'])) {
-            $search = $_COOKIE['search'];
+        $searchCookieValue = JsonCookie::getValueInJsonCookie('search', 'category');
+        if ($searchCookieValue != null) {
+            $search = $searchCookieValue;
         }
 
         $totalCategoryRecord = Category::count();
@@ -122,21 +124,21 @@ class CategoryService extends ServiceAbstract
         $categoryService->setLimit($pagination->getStartRecordNumber(), $pagination->getTotalRecordsPerPage());
         $categoriesJson = $categoryService->getCategoriesToJson();
         $prioritiesJson = Priority::all()->toJson();
-        
-        $sortCookie = Cookie::make('sort', $sortName, 3000);
-        $orderCookie = Cookie::make('order', $orderValue, 3000);
+                
+        JsonCookie::createJsonCookie('sort', 'category', $sortName);
+        JsonCookie::createJsonCookie('order', 'category', $orderValue);
 
         return response()->json([
             'page' => $currentPage,
             'priorities' => $prioritiesJson,
             'categories' => $categoriesJson
-        ])->cookie($sortCookie)->cookie($orderCookie);
+        ]);
     }
 
-    public function getParentCategoryRecords()
+    public function getOptimizeCategoryRecords()
     {
         $categories = Category::select('id', 'describes', 'name')->get()->toArray();
-        $newCategories = [];
+        $newCategories = []; 
         foreach ($categories as $key => $value) {
             $newCategories[$value['id']] = $value;
         }
@@ -158,7 +160,7 @@ class CategoryService extends ServiceAbstract
 
     public function search($search = "")
     {        
-        $searchCookie = Cookie::make('search', $search, 3000);
-        return redirect()->route('category.index')->cookie($searchCookie);        
+        JsonCookie::createJsonCookie('search', 'category', $search);
+        return redirect()->route('category.index');        
     }
 }
