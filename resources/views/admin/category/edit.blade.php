@@ -32,7 +32,7 @@ $activeMenu = 'category';
   @php
   $editCategory = (array)$editCategory;
   @endphp
-  <form action="{{route('category.update',['category' => $editCategory['id']])}}" id="edit-category-form" method="POST">
+  <form action="{{route('category.update',['category' => $editCategory['id']])}}" id="category-form" method="POST">
     @method('PUT')
     @csrf
     <div class="form-group col-md-9">

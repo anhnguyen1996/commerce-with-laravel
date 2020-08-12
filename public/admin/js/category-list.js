@@ -1,36 +1,15 @@
-function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    var expires = "expires=" + d.toGMTString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for(var i = 0; i <ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "";
-}
-
 function jsonToListHtml(json, token = null) {
     var categoryArray = json['categories'];
     var priorityArray = json['priorities'];
     var page = json['page'];        
     categoryArray = JSON.parse(categoryArray);
     priorityArray = JSON.parse(priorityArray);
-    page = JSON.parse(page);    
+    page = JSON.parse(page);
+    page = parseInt(page);    
     var categoryArrayLength = categoryArray.length;
     var priorityArrayLength = priorityArray.length;
-    var html = '';    
+    var html = '';
+    var orderNumber = ((page - 1) * 10) + 1;
     for (var i = 0; i < categoryArrayLength; i++) {
         var category = categoryArray[i];
 
@@ -41,7 +20,7 @@ function jsonToListHtml(json, token = null) {
             }
         }        
         var categoryHtml = '<tr>';
-        categoryHtml += '<td>' + (i + 1) + '</td>';
+        categoryHtml += '<td>' + orderNumber++ + '</td>';
         categoryHtml += '<td>' + category.describes + '</td>';
         categoryHtml += '<td>' + category.name + '</td>';
         categoryHtml += '<td>' + priorityDescribes + '</td>';
@@ -140,4 +119,3 @@ $(document).ready(function () {
         window.location.href = window.location.protocol + '//' + window.location.hostname + '/admin/category/search/';
     });
 });
-

@@ -41,7 +41,10 @@ $activeMenu = 'category';
           @endphp
           @isset($_COOKIE['sort'])
           @php
-          $sort = $_COOKIE['sort'];
+          $sortCookieJson = json_decode($_COOKIE['sort']);
+          if (isset($sortCookieJson->category)) {
+            $sort = $sortCookieJson->category;
+          }          
           @endphp
           @endisset
           <option value="id">Gần đây</option>
@@ -61,7 +64,10 @@ $activeMenu = 'category';
           @endphp
           @isset($_COOKIE['order'])
           @php
-          $order = $_COOKIE['order'];
+          $orderCookieJson = json_decode($_COOKIE['order']);
+          if (isset($orderCookieJson->category)) {
+            $order = $orderCookieJson->category;
+          }          
           @endphp
           @endisset
           <option value="asc" @if ($order=='asc' ) selected @endif>Tăng dần</option>
@@ -85,7 +91,18 @@ $activeMenu = 'category';
 <!-- End script -->
 
 @isset($_COOKIE['search'])
-<p> Kết quả tìm kiếm từ khóa "{{$_COOKIE['search']}}" <a class="text-danger" id="delete-search">Xóa tìm kiếm</a></p>
+  @php
+  $search = null;
+  $searchCookieJson = json_decode($_COOKIE['search']);
+  @endphp
+  @isset ($searchCookieJson->category) 
+    @php
+    $search = $searchCookieJson->category;
+    @endphp
+    @if ($search != null && $search != '')
+    <p> Kết quả tìm kiếm từ khóa "{{$search}}" <a class="text-danger" id="delete-search">Xóa tìm kiếm</a></p>
+    @endif
+  @endisset
 @endisset
 <div class="table-responsive" style="min-height: 600px">
   <table class="table table-striped table-bordered table-hover ">
@@ -103,8 +120,11 @@ $activeMenu = 'category';
     <tbody id="category-table-tbody">
       @php
       $index = 0;
+      /**
+       * @var \App\Http\Controllers\Admin\Modules\Pagination\Pagination $pagination;
+       */
       if (isset($pagination)) {
-      $index = $pagination->getStartRecordNumber();
+        $index = $pagination->getStartRecordNumber();
       }
       //dd($categories);
       @endphp

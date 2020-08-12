@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Admin;
 
 use Exception;
 use App\Category;
+use App\Http\Controllers\Admin\Modules\Cookie\JsonCookie;
 use App\Priority;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Modules\Pagination\Pagination;
@@ -25,14 +26,16 @@ class CategoryController extends Controller
      */
     public function index($page = 1)
     {
-        $sortName = 'id';
-        if (isset($_COOKIE['sort'])) {
-            $sortName = $_COOKIE['sort'];
-        }
-
+        $sortName = 'id';                
+        $sortCookieValue = JsonCookie::getValueInJsonCookie('sort', 'category');
+        if ($sortCookieValue != null) {
+            $sortName = $sortCookieValue;
+        }        
+            
         $orderValue = 'asc';
-        if (isset($_COOKIE['order'])) {
-            $orderValue = $_COOKIE['order'];
+        $orderCookieValue = JsonCookie::getValueInJsonCookie('order', 'category');
+        if ($orderCookieValue != null) {
+            $orderValue = $orderCookieValue;
         }
 
         //To display lastest ID for user, so we should order by DESC with field ID 
@@ -41,9 +44,9 @@ class CategoryController extends Controller
         }
 
         $search = null;
-
-        if (isset($_COOKIE['search'])) {
-            $search = $_COOKIE['search'];
+        $searchCookieValue = JsonCookie::getValueInJsonCookie('search', 'category');
+        if ($searchCookieValue != null) {
+            $search = $searchCookieValue;
         }
 
         $totalCategoryRecord = 0;
@@ -68,7 +71,7 @@ class CategoryController extends Controller
         $categories = $categoryService->getCategoriesToArray();
 
         $prioritiesService = new PriorityService();
-        $priorities = $prioritiesService->getPriorityRecord();
+        $priorities = $prioritiesService->getPrioritiesToArray();
         
         $contents = view('admin.category.list')->with([
             'search' => $search,            
@@ -76,10 +79,10 @@ class CategoryController extends Controller
             'priorities' => $priorities,
             'pagination' => $pagination
         ]);
+        
+        JsonCookie::createJsonCookie('page', 'category', $page);
 
-        $cookie = Cookie::make('page', $page, 3000);
-
-        return response($contents)->withCookie($cookie);;
+        return response($contents);
     }
 
     /**
@@ -90,10 +93,10 @@ class CategoryController extends Controller
     public function create()
     {
         $prioritiesService  = new PriorityService();
-        $priorities = $prioritiesService->getPriorityRecord();
+        $priorities = $prioritiesService->getPrioritiesToArray();
 
         $categoryService = new CategoryService();
-        $parentCategories = $categoryService->getParentCategoryRecords();                               
+        $parentCategories = $categoryService->getOptimizeCategoryRecords();                               
         $content = view('admin.category.create')->with([            
             'priorities' => $priorities,
             'parentCategories' => $parentCategories
@@ -158,7 +161,7 @@ class CategoryController extends Controller
         $editCategory = Category::find($id)->toArray();
 
         $categoryService =  new CategoryService();
-        $parentCategories = $categoryService->getParentCategoryRecords();        
+        $parentCategories = $categoryService->getOptimizeCategoryRecords();
 
         $content = view('admin.category.edit')->with([            
             'priorities' => $priorities,

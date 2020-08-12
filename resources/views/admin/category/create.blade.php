@@ -29,7 +29,7 @@ $activeMenu = 'category';
 <script src="{{asset('public/admin/js/category-form.js')}}"></script>
 <!-- End script -->
 <section class="content">
-  <form action="{{route('category.store')}}" id="create-category-form" method="POST">
+  <form action="{{route('category.store')}}" id="category-form" method="POST">
     @csrf
     <div class="form-group col-md-9">
       <label for="category-describes">Tên danh mục:</label>

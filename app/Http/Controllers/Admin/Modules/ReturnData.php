@@ -24,7 +24,7 @@ class ReturnData
 
     public function __construct(
         string $content = null,
-        \App\Http\Controllers\Admin\Header\HeaderPanel $headerPanel = null,
+        \App\Http\Controllers\Admin\Modules\Header\HeaderPanel $headerPanel = null,
         array $result = []
     ) {
         $this->content = $content;
