@@ -69,9 +69,7 @@ function convertStringToLink(element) {
 
     var value = element.val();    
     value = changeToNormalString(value);
-    value = value.replace(/\ /g, '-');
-    $('#product-link').val(value);
-    $('#category-name').val(value);
+    value = value.replace(/\ /g, '-');    
     return value;
 }
 
